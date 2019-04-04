@@ -1,46 +1,44 @@
-// const firestoredb = require('../firebase') mysql init
 const request = require('request-promise')
 const util = require('util')
+const queries = require('./database/queries')
+const main_url = "//api.blockcypher.com/v1/bcy/test" //Easily change between Blockcypher and Bitcoin Testnet
 
+//Gets Balance of Specific TestNet Address
+module.exports.getAddress = async function (req, res){
 
-function getOptions(requestType, uri) {
-    return options = { //Define request option and json stringify
-        method: requestType,
-        uri: uri,
+    var address = req.params.address;
+    var url = util.format(main_url + "/addrs/%s/balance", address)
+    
+    var options = { //Define request option and json stringify
+        method: 'GET',
+        uri: url,
         json: true 
     }
 
-}
+    try {
+        var response = await request(options)
+        var transactions = await queries.selectTransactions(address)
 
-//Gets Balance of Specific TestNet Address
-module.exports.getAddress = function (req, res){
+        var result = {
+            address: response.address,
+            balance: response.balance,
+            total_recieved: response.total_recieved,
+            total_sent: response.total_sent,
+            transactions: transactions
+            };
 
-    var address = req.params.address;
-    var url = util.format("https://api.blockcypher.com/v1/btc/test3/addrs/%s/balance", address)
-
-    var options = getOptions('GET', url)
+    } catch (error) {
+        return false
+        
+    }
     
-    // var options = { //Define request option and json stringify
-    //     method: 'GET',
-    //     uri: url,
-    //     json: true 
-    // }
-
-    // request(options)
-    //     .then(function (response) {
-    //         console.log(response)
-    //         res.send(response)
-    //     })
-    //     .catch(function (err) {
-    //         console.log(err)
-    //     })
    
 }
 
-//Generate a new public Bitcoin testnet3 address
-module.exports.generateAddress = function (req, res){
+//Generate a new public  address
+module.exports.generateAddress = async function (req, res){
 
-    var url = util.format("https://api.blockcypher.com/v1/btc/test3/addrs?token=%s", token)
+    var url = util.format(main_url + "/addrs?token=%s", token)
     
     var options = { //Define request option and json stringify
         method: 'POST',
@@ -48,21 +46,37 @@ module.exports.generateAddress = function (req, res){
         json: true 
     }
 
-    request(options)
-        .then(function (response) {
-            console.log(response)
-            res.send(response)
-        })
-        .catch(function (err) {
-            console.log(err)
-        })
-   
+    try {
+        var response = await request(options)
+        var success = await queries.insertAddress(response.address, response.private, response.public)
+        return success;
+
+    } catch (err) {
+        return false;
+    }
+  
 }
 
 //Adds Funds to Specified Address from Bitcoin Testnet Faucet
 module.exports.addFaucetFunds  = function (req, res){
 
+    var url = util.format(main_url + "/faucet?token=%s", token)
+    var address = req.body.address
+    var amount = req.body.amount
+    
+    var options = { //Define request option and json stringify
+        method: 'POST',
+        body: {
+            "address": address,
+            "amount": amount
+        },
+        uri: url,
+        json: true 
+    }
 
+    var response = await request(options)
+    var success = await queries.insertTransaction("Faucet", address, amount, response.tx_ref)
+    return success;
 
 
 }
