@@ -5,11 +5,11 @@ export default {
     return api().get('address/' + address)
   },
 
-  generateAddress(){
-      return api().post('generateAddress')
+  generateAddress () {
+    return api().post('generateAddress')
   },
 
-  addFunds(addressObj){
+  addFunds (addressObj) {
     return api().post('generateAddress', addressObj)
   }
 }

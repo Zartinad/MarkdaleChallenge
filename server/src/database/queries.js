@@ -13,7 +13,7 @@ module.exports.insertAddress  = async function (address, private_key, public_key
         console.log("Successfully Inserted Address")
         return true;
 
-    } catch {
+    } catch (err) {
         throw Error("Unsuccessful Address Insert")
     }
 }
@@ -42,7 +42,7 @@ module.exports.insertTransaction  = async function (address_send, address_receie
         console.log("Successfully Inserted Transaction")
         return true
 
-    } catch {
+    } catch (err) {
         throw Error("Unsuccessful Address Insert")
     
     }
@@ -56,10 +56,8 @@ module.exports.insertTransaction  = async function (address_send, address_receie
 module.exports.selectTransactions  = async function (address){
 
     if (address) {
-        var query = "SELECT * from 'Transactions' WHERE `Sent By` = ? OR address = ? ORDER BY `Date`"
-        var result = await db.query(query, [address, address], (err) => {
-            console.log(err)
-        })
+        var query = "SELECT * from `Transactions` WHERE `Sent By` = ? OR `Received By` = ? ORDER BY `Date`"
+        var result = await db.query(query, [address, address])
 
         return result
 

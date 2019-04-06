@@ -1,7 +1,7 @@
 const request = require('request-promise')
 const util = require('util')
-const queries = require('./database/queries')
-const main_url = "//api.blockcypher.com/v1/bcy/test" //Easily change between Blockcypher and Bitcoin Testnet
+const queries = require('../database/queries')
+const main_url = "https://api.blockcypher.com/v1/bcy/test" //Easily change between Blockcypher and Bitcoin Testnet
 
 //Gets Balance of Specific TestNet Address
 module.exports.getAddress = async function (req, res){
@@ -20,18 +20,18 @@ module.exports.getAddress = async function (req, res){
         var transactions = await queries.selectTransactions(address)
 
         var result = {
-            address: response.address,
-            balance: response.balance,
-            total_recieved: response.total_recieved,
-            total_sent: response.total_sent,
+            address: response,
             transactions: transactions
             };
 
+        res.send(result)
+
+        return true
+
     } catch (error) {
+        console.log(error)
         return false
-        
     }
-    
    
 }
 
@@ -58,7 +58,7 @@ module.exports.generateAddress = async function (req, res){
 }
 
 //Adds Funds to Specified Address from Bitcoin Testnet Faucet
-module.exports.addFaucetFunds  = function (req, res){
+module.exports.addFaucetFunds  = async function (req, res){
 
     var url = util.format(main_url + "/faucet?token=%s", token)
     var address = req.body.address
@@ -81,4 +81,26 @@ module.exports.addFaucetFunds  = function (req, res){
 
 }
 
+module.exports.addTransaction  = async function (req, res){
 
+    var url = util.format(main_url + "/faucet?token=%s", token)
+    var address_send = req.body.address_send
+    var address_receieve =  req.body.adrress_receive
+    var amount = req.body.amount
+    
+    var options = { //Define request option and json stringify
+        method: 'POST',
+        body: {
+            "inputs": [{"address":  address_send}],
+            "outputs": [{"address":  address_receieve}],
+            "value": amount
+        },
+        uri: url,
+        json: true 
+    }
+
+    var response = await request(options)
+    var success = await queries.insertTransaction(address_send, address_receieve, amount, response.hash)
+    return success;
+
+}

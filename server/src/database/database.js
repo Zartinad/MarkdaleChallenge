@@ -8,7 +8,8 @@ var pool = mysql.createPool({
     user : 'zGolfTxQCI',
     password : 'v5ArG3JHi4',
     database : 'zGolfTxQCI',
-    insecureAuth : true
+    insecureAuth : true,
+    timezone: ''
 });
 
 pool.getConnection((err, connection) => {
