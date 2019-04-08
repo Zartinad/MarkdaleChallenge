@@ -37,7 +37,7 @@ module.exports.insertTransaction  = async function (address_send, address_receie
 
     try{
         var result = await db.query(query, [address_send, address_receieve, amount, tosign])
-        console.log("Successfully Inserted Transaction")
+        console.log("Successfully Inserted Transaction into SQL")
         return true
 
     } catch (err) {

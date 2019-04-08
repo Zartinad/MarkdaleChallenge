@@ -130,7 +130,6 @@ module.exports.addTransaction  = async function (req, res){
         if (response.statusCode == 400){//Something went wrong with the request
             console.log("SOMETHING'S WRONG")
             throw Error("Check Address or Amount")
-            return
         }
 
         //Sign transaction with private key and append information to transaction information
@@ -153,17 +152,17 @@ module.exports.addTransaction  = async function (req, res){
         var push_transaction = await request(options_send)
         console.log(push_transaction)
 
-        if (push_transaction.statusCode == 201){
-            console.log("Transaction Successfully Pushed")
-             //Insert transaction information to mysql server
-            await queries.insertTransaction(address_from, address_to, amount, response.tosign)
-            res.send({isSuccessful: true})
-        }
+        console.log("Transaction Successfully Pushed")
+        //Insert transaction information to mysql server
+        await queries.insertTransaction(address_from, address_to, amount, response.tosign)
+        res.send({isSuccessful: true})
        }
     
     } catch (err) {
-        console.log(err.error.errors)
-        res.send(err.error.errors)
+        console.log("Transaction Unsucessful")
+        console.log(err)
+        console.log(err.error)
+        res.send(err.error)
 
     }
 

@@ -10,12 +10,13 @@
           fixed
         >
         <v-toolbar-title style="width: 300px" class="ml-0 pl-3">
-          <span>Balance Checker</span>
+        <v-btn depressed large color="primary" @click="goHome">Home</v-btn>
         </v-toolbar-title>
         <v-text-field 
           flat solo-inverted 
           hide-details prepend-inner-icon="search" 
-          label="Search"
+          label="Search" @keyup.enter.native="goAddress"
+          v-model="search_address"
         ></v-text-field>
       </v-toolbar>
 
@@ -135,6 +136,7 @@ export default {
   data () {
     return {
       address: {},
+      search_address: '',
       address_to: '',
       transactions: [],
       errors: [],
@@ -152,7 +154,7 @@ export default {
     this.getAddress()
   },
   methods: {
-    async getAddress(){
+    async getAddress(){//Update information fields and transaction data
       var response = await api_services.getAddress(this.$route.params.address)
       this.address = response.data.address
       this.transactions = response.data.transactions
@@ -170,7 +172,7 @@ export default {
 
     },
 
-    async makeTransaction(){
+    async makeTransaction(){//Fill in the body of the transaction request
       var body = {
         address_from: this.address.address,
         address_to: this.address_to,
@@ -179,9 +181,9 @@ export default {
 
       var response = await api_services.makeTransaction(body)
 
-      if(response.data != null){//Something went wrong with the transaction
-        console.log(response.data)
-        this.errors = response.data
+      if(response.data.errors != null){//Something went wrong with the transaction
+        console.log(response.data.errors)
+        this.errors = response.data.errors
       } else {
         this.amount_transfer = ''
         this.address_to = ''
@@ -189,6 +191,15 @@ export default {
         await this.getAddress()
         
       }
+    },
+
+    goAddress(){
+      this.$router.push( `/address/${this.search_address}`)
+      this.$router.go()
+    },
+
+    goHome() {
+      this.$router.push({ path: `/` })
     }
   }
 
