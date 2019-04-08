@@ -16,6 +16,7 @@
                 </v-form>
               </v-card-text>
               <v-card-actions>
+                 <v-btn color="primary" @click="generateAddress">Generate Address</v-btn>
                 <v-spacer></v-spacer>
                 <v-btn color="primary" @click="redirectToAddress">Check Balance</v-btn>
               </v-card-actions>
@@ -29,6 +30,8 @@
 </template>
 
 <script>
+import api_services from '@/services/api_services'
+
 export default {
   name: 'Home',
   data () {
@@ -39,6 +42,11 @@ export default {
   methods: {
     redirectToAddress () {
       this.$router.push('address/' + this.address)
+    },
+    async generateAddress () {
+      var response = await api_services.generateAddress();
+      this.$router.push('address/' + response.data.address)
+
     }
 
   }

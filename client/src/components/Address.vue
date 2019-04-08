@@ -1,8 +1,31 @@
 <template>
   <v-app id="inspire">
     <v-content>
+
+      <!-- Search Bar -->
+      <v-toolbar
+          :clipped-left="$vuetify.breakpoint.lgAndUp"
+          color="blue darken-3"
+          dark
+          app
+          fixed
+        >
+        <v-toolbar-title style="width: 300px" class="ml-0 pl-3">
+          <span class="hidden-sm-and-down">Balance Checker</span>
+        </v-toolbar-title>
+        <v-text-field 
+          flat solo-inverted 
+          hide-details prepend-inner-icon="search" 
+          label="Search" class="hidden-sm-and-down"
+        ></v-text-field>
+      </v-toolbar>
+
+
       <v-container  grid-list-md>
+        <v-layout>
+        </v-layout>
         <v-layout row wrap align-space-between>
+
           <!-- Top Component w/ Address Information -->
           <v-flex xs12 sm12 md12>
             <v-card class="elevation-12">
@@ -33,11 +56,11 @@
                 </v-toolbar>
                 <v-card-text>
                   <v-form>
-                    <v-text-field prepend-icon="money" name="Deposit" label="Deposit" type="text" v-model="deposit"></v-text-field>
+                    <v-text-field prepend-icon="money" name="Deposit" label="Deposit" type="number" v-model="amount_deposit"></v-text-field>
                   </v-form>
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn block color="primary" @click="getAddress">Make Deposit</v-btn>
+                  <v-btn block color="primary" @click="makeDeposit">Make Deposit</v-btn>
                 </v-card-actions>
               </v-card>
             </v-flex>
@@ -51,11 +74,12 @@
                 </v-toolbar>
                 <v-card-text>
                   <v-form>
-                    <v-text-field prepend-icon="swap_horiz" name="Transfer" label="Transfer" type="text" v-model="transfer"></v-text-field>
+                    <v-text-field prepend-icon="swap_horiz" name="Transfer" label="Transfer" type="number" v-model="amount_transfer"></v-text-field>
+                    <v-text-field prepend-icon="house" name="Address_To" label="Address" type="text" v-model="address_to"></v-text-field>
                   </v-form>
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn block color="primary" >Make Transfer</v-btn>
+                  <v-btn block color="primary" @click="makeTransaction">Make Transfer</v-btn>
                 </v-card-actions>
               </v-card>
             </v-flex>
@@ -65,11 +89,27 @@
 
         <v-spacer></v-spacer>
 
-      <!-- Right Component w/ Transaction Actions -->
+      <!-- Right Component w/ Transactions List -->
         <v-flex xs12 sm12 md9 class="pt-3">
-            <v-card dark color="primary">
-              <v-card-text class="px-0">Transaction</v-card-text>
-            
+            <v-card class="elevation-12">
+             <v-toolbar dark color="primary">
+                  <v-toolbar-title>Transactions</v-toolbar-title>
+                  <v-spacer></v-spacer>
+            </v-toolbar>
+            <v-card-text>
+             <v-data-table :headers="headers" :items="transactions" class="elevation-1" >
+                <template v-slot:items="props">
+                  <td class="text-xs-left">{{ props.item["Date"]}}</td>
+                  <td class="text-xs-left">{{ props.item["Sent By"]}}</td>
+                  <td class="text-xs-left">{{ props.item["Received By"]}}</td>
+                  <td class="text-xs-left">{{ props.item["Amount"]}}</td>
+                  <td class="text-xs-left">{{ props.item["Hash #"]}}</td>
+
+                </template>
+
+              </v-data-table>
+            </v-card-text>
+
             </v-card>
         </v-flex>
        
@@ -87,9 +127,17 @@ export default {
   data () {
     return {
       address: {},
-      transaction: [],
-      deposit: 0,
-      transfer: 0
+      address_to: '',
+      transactions: [],
+      amount_deposit: 0,
+      amount_transfer: 0,
+      headers: [
+          { text: 'Date', value: 'name'},
+          { text: 'Sending Address', align: 'left', sortable: false, value: 'calories' },
+          { text: 'Receiving Address', align: 'left', sortable: false, value: 'fat' },
+          { text: 'Amount (Satoshis)', value: 'carbs' },
+          { text: 'Transaction Number', align: 'left', sortable: false, value: 'protein' },
+        ]
     }
   }, 
   mounted () {
@@ -97,11 +145,31 @@ export default {
   },
   methods: {
     async getAddress(){
-      const response = await api_services.getAddress(this.$route.params.address)
+      var response = await api_services.getAddress(this.$route.params.address)
       this.address = response.data.address
-      this.transaction = response.data.transaction
+      this.transactions = response.data.transactions
+    },
+
+    async makeDeposit(){
+      var body = {
+        address: this.address.address, 
+        amount: parseInt(this.amount_deposit)
+        }
+
+      var response = await api_services.makeDeposit(body)
+      var update = this.getAddress()
+    },
+
+    async makeTransaction(){
+      var body = {
+        address_from: this.address.address,
+        address_to: this.address_to,
+        amount: parseInt(this.amount_transfer)
+        }
+
+      api_services.makeTransaction(body)
+
     }
-    
   }
 
 }

@@ -6,10 +6,14 @@ export default {
   },
 
   generateAddress () {
-    return api().post('generateAddress')
+    return api().get('generateAddress')
   },
 
-  addFunds (addressObj) {
-    return api().post('generateAddress', addressObj)
+  makeDeposit (addressObj) {
+    return api().post('addFaucetFunds', addressObj)
+  },
+
+  makeTransaction (transactionObj) {
+    return api().post('addTransaction', transactionObj)
   }
 }
