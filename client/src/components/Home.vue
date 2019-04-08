@@ -13,12 +13,13 @@
               <v-card-text>
                 <v-form>
                   <v-text-field prepend-icon="house" name="Address" label="Address" type="text" v-model="address"></v-text-field>
+                  <p>{{error}}</p>
                 </v-form>
               </v-card-text>
               <v-card-actions>
                  <v-btn color="primary" @click="generateAddress">Generate Address</v-btn>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" @click="redirectToAddress">Check Balance</v-btn>
+                <v-btn color="primary" @click="redirectToAddress" v-bind:disabled="address === ''">Check Balance</v-btn>
               </v-card-actions>
             </v-card>
             
@@ -36,12 +37,22 @@ export default {
   name: 'Home',
   data () {
     return {
-      address: ''
+      address: '',
+      error:''
+      
     }
   },
   methods: {
-    redirectToAddress () {
-      this.$router.push('address/' + this.address)
+    async redirectToAddress () {
+     var response = await api_services.getAddress(this.address)
+     
+      if (response.data.address == null){
+        this.error = "Invalid Address"
+       
+      } else {
+         this.$router.push('address/' + this.address)
+      }
+      
     },
     async generateAddress () {
       var response = await api_services.generateAddress();
@@ -49,7 +60,12 @@ export default {
 
     }
 
-  }
+  },
+  watch: {
+    address: function () {
+      this.valid_address = true
+    }
+}
 }
 </script>
 

@@ -1,8 +1,6 @@
 const db = require('./database')
 const util = require('util')
 
-//need to escape provided value //
-
 //Insert address into mysql server along with is private and public key
 module.exports.insertAddress  = async function (address, private_key, public_key, wif){
 
@@ -44,10 +42,8 @@ module.exports.insertTransaction  = async function (address_send, address_receie
 
     } catch (err) {
         console.log(err)
-        throw Error("Unsuccessful Address Insert")
     
     }
-
 
 }
 
@@ -69,14 +65,24 @@ module.exports.selectTransactions  = async function (address){
     }
 }
 
+//Return the private and public keys of a given address
 module.exports.getKey  = async function (address){
 
     try {
         var query = "SELECT `Private_Key`, `Public_Key` FROM `Addresses` WHERE `Address` = ?"
         var response = await db.query(query, [address])
-        return {
-            privatekey: response[0].Private_Key,
-            publickey: response[0].Public_Key
+
+        if (response.length == 0) {//We do not have information about this public address
+            return {
+                found: false
+            }
+
+        } else {//Return the address key information from server
+            return {
+                privatekey: response[0].Private_Key,
+                publickey: response[0].Public_Key,
+                found: true
+            }   
         }
 
     } catch (error) {
@@ -84,4 +90,3 @@ module.exports.getKey  = async function (address){
     }
     
 }
-

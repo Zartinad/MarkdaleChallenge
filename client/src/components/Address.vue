@@ -83,6 +83,12 @@
                 <v-card-actions>
                   <v-btn block color="primary" @click="makeTransaction">Make Transfer</v-btn>
                 </v-card-actions>
+                <p v-if="errors.length > 0">
+                  <b>Please correct the following error(s):</b>
+                    <ul class="text-xs-left">
+                      <li v-for="(error, index) in errors" :key="index">-{{ error.error }}</li>
+                    </ul>
+                </p>
               </v-card>
             </v-flex>
 
@@ -131,6 +137,7 @@ export default {
       address: {},
       address_to: '',
       transactions: [],
+      errors: [],
       amount_deposit: 0,
       amount_transfer: 0,
       headers: [
@@ -170,12 +177,18 @@ export default {
         amount: parseInt(this.amount_transfer)
         }
 
-      await api_services.makeTransaction(body)
+      var response = await api_services.makeTransaction(body)
 
-      this.amount_transfer = ''
-      this.address_to = ''
-      this.getAddress()
-
+      if(response.data != null){//Something went wrong with the transaction
+        console.log(response.data)
+        this.errors = response.data
+      } else {
+        this.amount_transfer = ''
+        this.address_to = ''
+        this.error = []
+        await this.getAddress()
+        
+      }
     }
   }
 

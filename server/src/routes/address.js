@@ -6,7 +6,7 @@ const signer = require('../btcutils/signer/signer.js')
 const main_url = "https://api.blockcypher.com/v1/bcy/test" //Easily change between Blockcypher and Bitcoin Testnet
 const token = "535ad0b8be24403fa51649b0a10948a6"
 
-//Gets Balance of Specific TestNet Address
+//Gets information and transactions of specific address
 module.exports.getAddress = async function (req, res){
 
     var address = req.params.address;
@@ -20,6 +20,11 @@ module.exports.getAddress = async function (req, res){
 
     try {
         var response = await request(options)
+
+        if (response.statusCode == 404){
+            throw Error("Address Not Found")
+        }
+
         var transactions = await queries.selectTransactions(address)
 
         var result = {
@@ -29,11 +34,9 @@ module.exports.getAddress = async function (req, res){
 
         res.send(result)
 
-        return true
+    } catch (err) {
 
-    } catch (error) {
-        console.log(error)
-        return false
+        res.send({error: err})
     }
    
 }
@@ -124,12 +127,16 @@ module.exports.addTransaction  = async function (req, res){
     try {
         
         var response = await request(options) //Get transaction information from blockcypher
-
-        //Insert transaction information to mysql server
-        var success = await queries.insertTransaction(address_from, address_to, amount, response.tosign)
+        if (response.statusCode == 400){//Something went wrong with the request
+            console.log("SOMETHING'S WRONG")
+            throw Error("Check Address or Amount")
+            return
+        }
 
         //Sign transaction with private key and append information to transaction information
-        var {privatekey, publickey} = await queries.getKey(address_from)
+        var {privatekey, publickey, found} = await queries.getKey(address_from)
+        
+       if (found) {//We have the private and public key
         var signature = await signer.sign(response.tosign, privatekey)
         response["signatures"] = [signature]
         response["pubkeys"] = [publickey]
@@ -144,13 +151,19 @@ module.exports.addTransaction  = async function (req, res){
         }
 
         var push_transaction = await request(options_send)
-
         console.log(push_transaction)
-        res.send(push_transaction)
-        
+
+        if (push_transaction.statusCode == 201){
+            console.log("Transaction Successfully Pushed")
+             //Insert transaction information to mysql server
+            await queries.insertTransaction(address_from, address_to, amount, response.tosign)
+            res.send({isSuccessful: true})
+        }
+       }
+    
     } catch (err) {
-        console.log(err)
-        res.send(response)
+        console.log(err.error.errors)
+        res.send(err.error.errors)
 
     }
 
