@@ -1,6 +1,7 @@
 const request = require('request-promise')
 const util = require('util')
 const queries = require('../database/queries')
+const signer = require('../btcutils/signer/signer.js')
 
 const main_url = "https://api.blockcypher.com/v1/bcy/test" //Easily change between Blockcypher and Bitcoin Testnet
 const token = "535ad0b8be24403fa51649b0a10948a6"
@@ -50,7 +51,7 @@ module.exports.generateAddress = async function (req, res){
 
     try {
         var response = await request(options)
-        var success = await queries.insertAddress(response.address, response.private, response.public)
+        var success = await queries.insertAddress(response.address, response.private, response.public, response.wif)
         console.log("AWAITED")
         console.log(response)
         console.log(response.address)
@@ -105,36 +106,52 @@ module.exports.addFaucetFunds  = async function (req, res){
 //Transfer Funds Between 2 Addresses
 module.exports.addTransaction  = async function (req, res){
 
-    var url = util.format(main_url + "txs/new")
+    var url = util.format(main_url + "/txs/new")
     
     var address_from = req.body.address_from
     var address_to = req.body.address_to
     var amount = req.body.amount
  
-    var options = { //Define request option and json stringify
+    var options = {
         method: 'POST',
         body:  {
-            "inputs": [{"addresses": address_from}],
-            "outputs": [{"addresses": address_to}],
-            "value": amount
-            },
+            "inputs": [{"addresses": [address_from]}], 
+            "outputs": [{"addresses": [address_to], "value": amount}]},
         uri: url,
         json: true 
     }
 
     try {
-        // var response = await request(options)
+        
+        var response = await request(options) //Get transaction information from blockcypher
 
-        console.log(address_from)
-        console.log(address_to)
-        console.log(amount)
-        var success = await queries.insertTransaction(address_from, address_to, amount, "#123132")
-        res.send(req.body)
+        //Insert transaction information to mysql server
+        var success = await queries.insertTransaction(address_from, address_to, amount, response.tosign)
 
+        //Sign transaction with private key and append information to transaction information
+        var {privatekey, publickey} = await queries.getKey(address_from)
+        var signature = await signer.sign(response.tosign, privatekey)
+        response["signatures"] = [signature]
+        response["pubkeys"] = [publickey]
+        console.log(response)
+
+        var url_send = util.format(main_url + "/txs/send?token=%s", token)
+        var options_send = {
+            method: 'POST',
+            body:  response,
+            uri: url_send,
+            json: true 
+        }
+
+        var push_transaction = await request(options_send)
+
+        console.log(push_transaction)
+        res.send(push_transaction)
+        
     } catch (err) {
         console.log(err)
-    }
+        res.send(response)
 
-   
+    }
 
 }

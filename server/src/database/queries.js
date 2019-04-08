@@ -4,12 +4,12 @@ const util = require('util')
 //need to escape provided value //
 
 //Insert address into mysql server along with is private and public key
-module.exports.insertAddress  = async function (address, private_key, public_key){
+module.exports.insertAddress  = async function (address, private_key, public_key, wif){
 
-    var query = "INSERT INTO `Addresses`  (`Address`, `Private_Key`, `Public_Key`) VALUES  (?, ?, ?) "
+    var query = "INSERT INTO `Addresses`  (`Address`, `Private_Key`, `Public_Key`, `WIF`) VALUES  (?, ?, ?, ?) "
 
     try {
-        var result = await db.query(query, [address, private_key, public_key])
+        var result = await db.query(query, [address, private_key, public_key, wif])
         console.log("Successfully Inserted Address")
         return true;
 
@@ -32,25 +32,24 @@ module.exports.getAddresses  = async function (){
 }
 
 //Insert transaction information ** need to check for success
-module.exports.insertTransaction  = async function (address_send, address_receieve, amount, hash){
+module.exports.insertTransaction  = async function (address_send, address_receieve, amount, tosign){
 
     //Data automatically set as current time
-    var query = "INSERT INTO `Transactions` (`Sent By`, `Received By`, `Amount`, `Hash #`) VALUES (?,?,?,?)"
+    var query = "INSERT INTO `Transactions` (`Sent By`, `Received By`, `Amount`, `tosign`) VALUES (?,?,?,?)"
 
     try{
-        var result = await db.query(query, [address_send, address_receieve, amount, hash])
+        var result = await db.query(query, [address_send, address_receieve, amount, tosign])
         console.log("Successfully Inserted Transaction")
         return true
 
     } catch (err) {
+        console.log(err)
         throw Error("Unsuccessful Address Insert")
     
     }
 
 
 }
-
-
 
 //Return a list of transactions that includes the specified address
 module.exports.selectTransactions  = async function (address){
@@ -70,4 +69,19 @@ module.exports.selectTransactions  = async function (address){
     }
 }
 
+module.exports.getKey  = async function (address){
+
+    try {
+        var query = "SELECT `Private_Key`, `Public_Key` FROM `Addresses` WHERE `Address` = ?"
+        var response = await db.query(query, [address])
+        return {
+            privatekey: response[0].Private_Key,
+            publickey: response[0].Public_Key
+        }
+
+    } catch (error) {
+        console.log(error)
+    }
+    
+}
 

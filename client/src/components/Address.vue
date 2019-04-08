@@ -7,16 +7,15 @@
           :clipped-left="$vuetify.breakpoint.lgAndUp"
           color="blue darken-3"
           dark
-          app
           fixed
         >
         <v-toolbar-title style="width: 300px" class="ml-0 pl-3">
-          <span class="hidden-sm-and-down">Balance Checker</span>
+          <span>Balance Checker</span>
         </v-toolbar-title>
         <v-text-field 
           flat solo-inverted 
           hide-details prepend-inner-icon="search" 
-          label="Search" class="hidden-sm-and-down"
+          label="Search"
         ></v-text-field>
       </v-toolbar>
 
@@ -27,13 +26,20 @@
         <v-layout row wrap align-space-between>
 
           <!-- Top Component w/ Address Information -->
-          <v-flex xs12 sm12 md12>
+   
+
+       <!-- Left Component w/ Transaction Actions -->
+        <v-flex xs12 sm12 md3 class="pt-2 pr-2">
+          <v-layout column>
+
+             <v-flex xs12 sm12 md12>
             <v-card class="elevation-12">
               <v-toolbar dark color="primary">
-                <v-toolbar-title>Address: {{address.address}}</v-toolbar-title>
+                <v-toolbar-title>Information</v-toolbar-title>
                 <v-spacer></v-spacer>
               </v-toolbar>
               <v-card-text class="text-xs-left">
+                <p>Address: {{address.address}}</p>
                 <p>Total Received: {{address.total_received}} </p>
                 <p>Total Sent: {{address.total_sent}} </p>
                 <p>Balance: {{address.balance}} </p>
@@ -42,10 +48,6 @@
               </v-card-text>
             </v-card>
           </v-flex>
-
-       <!-- Left Component w/ Transaction Actions -->
-        <v-flex xs12 sm12 md3 class="pt-2 pr-2">
-          <v-layout column>
 
           <!-- Deposit Funds Component --> 
             <v-flex xs12 sm12 md12 class="pt-3">
@@ -90,7 +92,7 @@
         <v-spacer></v-spacer>
 
       <!-- Right Component w/ Transactions List -->
-        <v-flex xs12 sm12 md9 class="pt-3">
+        <v-flex xs12 sm12 md9>
             <v-card class="elevation-12">
              <v-toolbar dark color="primary">
                   <v-toolbar-title>Transactions</v-toolbar-title>
@@ -103,7 +105,7 @@
                   <td class="text-xs-left">{{ props.item["Sent By"]}}</td>
                   <td class="text-xs-left">{{ props.item["Received By"]}}</td>
                   <td class="text-xs-left">{{ props.item["Amount"]}}</td>
-                  <td class="text-xs-left">{{ props.item["Hash #"]}}</td>
+                  <!-- <td class="text-xs-left">{{ props.item["Hash #"]}}</td> -->
 
                 </template>
 
@@ -135,8 +137,7 @@ export default {
           { text: 'Date', value: 'name'},
           { text: 'Sending Address', align: 'left', sortable: false, value: 'calories' },
           { text: 'Receiving Address', align: 'left', sortable: false, value: 'fat' },
-          { text: 'Amount (Satoshis)', value: 'carbs' },
-          { text: 'Transaction Number', align: 'left', sortable: false, value: 'protein' },
+          { text: 'Amount (Satoshis)', value: 'carbs' }
         ]
     }
   }, 
@@ -158,6 +159,8 @@ export default {
 
       var response = await api_services.makeDeposit(body)
       var update = this.getAddress()
+      this.amount_deposit = ''
+
     },
 
     async makeTransaction(){
@@ -167,7 +170,11 @@ export default {
         amount: parseInt(this.amount_transfer)
         }
 
-      api_services.makeTransaction(body)
+      await api_services.makeTransaction(body)
+
+      this.amount_transfer = ''
+      this.address_to = ''
+      this.getAddress()
 
     }
   }
