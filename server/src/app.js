@@ -10,7 +10,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors())
 
-app.listen(process.env.PORT || 8890)
+var distDir = __dirname + "/dist/";
+app.use(express.static(distDir));
+
+var port = process.env.PORT || 8888;
+app.listen(port)
+console.log('server started '+ port);
+
 
 //Routing
 
