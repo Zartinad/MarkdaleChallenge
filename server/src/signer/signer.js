@@ -1,7 +1,7 @@
 const util = require('util')
 const exec = util.promisify(require('child_process').exec);
 
-var program = "./src/btcutils/signer/signer"
+var program = "./src/signer/signer"
 
 
 //Returns the object needed to push transaction to blockcahin
