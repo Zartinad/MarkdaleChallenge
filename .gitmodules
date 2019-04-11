@@ -1,3 +1,0 @@
-[submodule "server/src/btcutils"]
-	path = server/src/btcutils
-	url = https://github.com/Zartinad/btcutils.git
