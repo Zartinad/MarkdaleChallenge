@@ -10,10 +10,10 @@ Perform each task in a seperate terminal window/tab\ It will tell you which port
 
 In the client folder:\
 npm install\
-npm start\
+npm start
 
 In the server folder:\
 npm install\
-npm start\
+npm start
 
 
