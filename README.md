@@ -6,11 +6,14 @@ I created this using a fullstack comprimising of VueJS for frontend, Express+Nod
 
 # How To Run Locally:
 
-Run the client folder:
-cd client
-npm run build
+Perform each task in a seperate terminal window/tab\ It will tell you which port the application is hosted on where you run the client.
 
-Run the server:
-cd server
-npm run build
+In the client folder:\
+npm install\
+npm start\
+
+In the server folder:\
+npm install\
+npm start\
+
 
