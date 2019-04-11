@@ -13,7 +13,7 @@ app.use(cors())
 var distDir = __dirname + "/dist/";
 app.use(express.static(distDir));
 
-var port = process.env.PORT || 9000;
+var port = process.env.PORT || 9001;
 app.listen(port)
 console.log('server started '+ port);
 

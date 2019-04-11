@@ -6,10 +6,17 @@ var program = "./src/signer/signer"
 
 //Returns the object needed to push transaction to blockcahin
 module.exports.sign = async function (tosign, private_key) {
-    var command = util.format("%s %s %s", program, tosign, private_key)
 
-    const { stdout, stderr } = await exec(command);
+    var signatures = []
+
+    for (var i = 0; i < tosign.length; i++){
+        var command = util.format("%s %s %s", program, tosign[i], private_key)
+        const { stdout, stderr } = await exec(command);
+        signatures.push(stdout.slice(0, stdout.length - 1))
+    }
+
+    
   
-    return stdout.slice(0, stdout.length - 1)
+    return signatures
 }
 
