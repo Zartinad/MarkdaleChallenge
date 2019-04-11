@@ -30,13 +30,13 @@ module.exports.getAddresses  = async function (){
 }
 
 //Insert transaction information ** need to check for success
-module.exports.insertTransaction  = async function (address_send, address_receieve, amount, tosign){
+module.exports.insertTransaction  = async function (address_send, address_receieve, amount, hash){
 
     //Data automatically set as current time
-    var query = "INSERT INTO `Transactions` (`Sent By`, `Received By`, `Amount`, `tosign`) VALUES (?,?,?,?)"
+    var query = "INSERT INTO `Transactions` (`Sent By`, `Received By`, `Amount`, `hash`) VALUES (?,?,?,?)"
 
     try{
-        var result = await db.query(query, [address_send, address_receieve, amount, tosign])
+        var result = await db.query(query, [address_send, address_receieve, amount, hash])
         console.log("Successfully Inserted Transaction into SQL")
         return true
 

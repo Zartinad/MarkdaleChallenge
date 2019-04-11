@@ -137,8 +137,13 @@ module.exports.addTransaction  = async function (req, res){
         
        if (found) {//We have the private and public key
         var signature = await signer.sign(response.tosign, privatekey)
-        response["signatures"] = [signature]
-        response["pubkeys"] = [publickey]
+        response["signatures"] = signature
+        
+        var pubkeys = []
+        for (var i = 0; i < signature.length; i++){
+            pubkeys.push(publickey)
+        }
+        response["pubkeys"] = pubkeys
         console.log(response)
 
         var url_send = util.format(main_url + "/txs/send?token=%s", token)
@@ -154,7 +159,7 @@ module.exports.addTransaction  = async function (req, res){
 
         console.log("Transaction Successfully Pushed")
         //Insert transaction information to mysql server
-        await queries.insertTransaction(address_from, address_to, amount, response.tosign)
+        await queries.insertTransaction(address_from, address_to, amount, response.tx.hash)
         res.send({isSuccessful: true})
        }
     
