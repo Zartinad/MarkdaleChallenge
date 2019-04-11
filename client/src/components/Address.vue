@@ -39,7 +39,7 @@
                 <v-toolbar-title>Information</v-toolbar-title>
                 <v-spacer></v-spacer>
               </v-toolbar>
-              <v-card-text class="text-xs-left">
+              <v-card-text style="word-wrap: break-word;" class="text-xs-left">
                 <p>Address: {{address.address}}</p>
                 <p>Total Received: {{address.total_received}} </p>
                 <p>Total Sent: {{address.total_sent}} </p>
