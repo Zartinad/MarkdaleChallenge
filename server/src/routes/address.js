@@ -12,20 +12,20 @@ module.exports.getAddress = async function (req, res){
     var address = req.params.address;
     var url = util.format(main_url + "/addrs/%s/balance", address)
     
-    var options = { //Define request option and json stringify
+    var options = {
         method: 'GET',
         uri: url,
         json: true 
     }
 
     try {
-        var response = await request(options)
+        var response = await request(options) //Send GET request to Blockypher for address Balance
 
-        if (response.statusCode == 404){
+        if (response.statusCode == 404){ //Check if address exists
             throw Error("Address Not Found")
         }
 
-        var transactions = await queries.selectTransactions(address)
+        var transactions = await queries.selectTransactions(address) //Query any transaction history
 
         var result = {
             address: response,
@@ -35,7 +35,6 @@ module.exports.getAddress = async function (req, res){
         res.send(result)
 
     } catch (err) {
-
         res.send({error: err})
     }
    
@@ -45,7 +44,6 @@ module.exports.getAddress = async function (req, res){
 module.exports.generateAddress = async function (req, res){
 
     var url = util.format(main_url + "/addrs?token=%s", token)
-    console.log("DINGS")
     var options = {
         method: 'POST',
         uri: url,
@@ -53,11 +51,10 @@ module.exports.generateAddress = async function (req, res){
     }
 
     try {
-        var response = await request(options)
+        var response = await request(options) //Send POST request to Blockcypher to create new 
+
+        //Log information in mysql database
         var success = await queries.insertAddress(response.address, response.private, response.public, response.wif)
-        console.log("AWAITED")
-        console.log(response)
-        console.log(response.address)
 
         res.send(response)
 
@@ -75,8 +72,6 @@ module.exports.addFaucetFunds  = async function (req, res){
     var url = util.format(main_url + "/faucet?token=%s", token)
     var address = req.body.address
     var amount = req.body.amount
-
-    console.log(req.body)
     
     console.log(address)
     var options = { //Define request option and json stringify
@@ -128,7 +123,6 @@ module.exports.addTransaction  = async function (req, res){
         
         var response = await request(options) //Get transaction information from blockcypher
         if (response.statusCode == 400){//Something went wrong with the request
-            console.log("SOMETHING'S WRONG")
             throw Error("Check Address or Amount")
         }
 
@@ -139,12 +133,11 @@ module.exports.addTransaction  = async function (req, res){
         var signature = await signer.sign(response.tosign, privatekey)
         response["signatures"] = signature
         
-        var pubkeys = []
+        var pubkeys = [] //sign all the signautures
         for (var i = 0; i < signature.length; i++){
             pubkeys.push(publickey)
         }
         response["pubkeys"] = pubkeys
-        console.log(response)
 
         var url_send = util.format(main_url + "/txs/send?token=%s", token)
         var options_send = {
@@ -154,10 +147,8 @@ module.exports.addTransaction  = async function (req, res){
             json: true 
         }
 
-        var push_transaction = await request(options_send)
-        console.log(push_transaction)
-
         console.log("Transaction Successfully Pushed")
+        var push_transaction = await request(options_send)
         //Insert transaction information to mysql server
         await queries.insertTransaction(address_from, address_to, amount, response.tx.hash)
         res.send({isSuccessful: true})
@@ -165,8 +156,6 @@ module.exports.addTransaction  = async function (req, res){
     
     } catch (err) {
         console.log("Transaction Unsucessful")
-        console.log(err)
-        console.log(err.error)
         res.send(err.error)
 
     }
