@@ -1,7 +1,7 @@
 const request = require('request-promise')
 const util = require('util')
 const queries = require('../database/queries')
-const signer = require('../btcutils/signer/signer.js')
+const signer = require('../signer/signer.js')
 
 const main_url = "https://api.blockcypher.com/v1/bcy/test" //Easily change between Blockcypher and Bitcoin Testnet
 const token = "535ad0b8be24403fa51649b0a10948a6"
