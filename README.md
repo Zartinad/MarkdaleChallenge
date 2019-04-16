@@ -8,14 +8,14 @@ I created this using a fullstack comprimising of VueJS for frontend, Express+Nod
 
 Perform both the frontend and backend servers in two seperate terminal windows. The client runs on port 8080 and the backend runs on port 8081
 
-####Run frontend:
+######Run frontend:
 ```
 cd client
 npm install
 npm start
 ```
 
-####Run backend:
+######Run backend:
 ```
 cd server
 npm install
